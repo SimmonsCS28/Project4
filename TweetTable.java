@@ -10,24 +10,17 @@ public class TweetTable {
 
 	// Import csv file and build List of keywords with sub list of tweets that
 	// contain that keyword
+	
+	//**********************************************************************************************************
 	public HashMap<String, ArrayList<TweetInfo>> createMap() {
 
 		String tempKeyword = " ", prevKeyword = null;
-	
+
 		String delimiter = ",";
 		FileIn fileInput = new FileIn();
 		fileInput
 				.openFile("C:\\Users\\SimmonsCS28\\workspace\\CompSci223\\src\\Project4\\project4.csv");
 		String line = fileInput.readLine();
-		Scanner sr = new Scanner(line).useDelimiter(delimiter);
-		String id = sr.next();
-		String popularity = sr.next();
-		String keyword = sr.next();
-		String user = sr.next();
-		String text = sr.next();
-		while (sr.hasNext()){
-			text = text + sr.next();
-		}
 		String[] tempInputArray = line.split(delimiter);
 
 		tempKeyword = tempInputArray[2];
@@ -39,7 +32,7 @@ public class TweetTable {
 			// current keyword create a new list
 			if (prevKeyword == null || !prevKeyword.equals(tempKeyword)) {
 				ArrayList<TweetInfo> list = new ArrayList<TweetInfo>();
-				list = subListBuilder(tempKeyword);
+				list = subListBuilder(tempKeyword); // call subListBuilder method to create list of tweets containing the keyword
 				tweetMap.put(tempKeyword, list);
 				prevKeyword = tempInputArray[2];
 
@@ -50,16 +43,19 @@ public class TweetTable {
 				tempInputArray = line.split(delimiter);
 				tempKeyword = tempInputArray[2];
 			}
-		}
+		}// End of while loop
 
 		return tweetMap;
 	}
+	//**********************************************************************************************************	
+	
 
 	// Method to build sublist for each keyword's tweet
-	public ArrayList<TweetInfo> subListBuilder(String keyword) {
+	//**********************************************************************************************************
+	public ArrayList<TweetInfo> subListBuilder(String key) {
 
 		ArrayList<TweetInfo> subTweets = new ArrayList<TweetInfo>();
-		String popularity = " ", id = " ", user = " ", text = " ";
+		
 		FileIn fileIn = new FileIn();
 		fileIn.openFile("C:\\Users\\SimmonsCS28\\workspace\\CompSci223\\src\\Project4\\project4.csv");
 		String line = fileIn.readLine();
@@ -67,31 +63,71 @@ public class TweetTable {
 		while (line != null) {
 			String[] tempInputArray = line.split(",");
 			String keyCheck = tempInputArray[2];
-			if (keyword.equalsIgnoreCase(keyCheck)) {
-				popularity = tempInputArray[0];
-				id = tempInputArray[1];
-				keyword = tempInputArray[2];
-				user = tempInputArray[3];
-				text = tempInputArray[4];
+			if (key.equalsIgnoreCase(keyCheck)) {
+				@SuppressWarnings("resource")
+				Scanner sr = new Scanner(line).useDelimiter(",");
+				String popularity = sr.next();
+				String id = sr.next();
+				String keyword = sr.next();
+				String user = sr.next();
+				String text = sr.next();
+				
+				while (sr.hasNext()) {
+					String next = sr.next();
+					text = text+","+next;
+				}
 				TweetInfo tweet = new TweetInfo(popularity, id, keyword, user,
 						text);
 				subTweets.add(tweet);
 			}
+			
 			line = fileIn.readLine();
 		}
 		return subTweets;
 	}
-
+	//**********************************************************************************************************
+	
+	
 	// Method to sort found tweets by popularity first then by user
-	public void sort(ArrayList<TweetInfo> list) {
-		TweetInfo[] tweets = new TweetInfo[list.size()];
+	//**********************************************************************************************************	
+	public ArrayList<TweetInfo> sortTweets(ArrayList<TweetInfo> list) {
+		for (int k = 0; k < list.size() - 1; k++) {
+			int minIndex = k;
 
-		for (int i = 0; i < tweets.length; i++) {
+			for (int j = k + 1; j < list.size(); j++) {
+				if (list.get(j)
+						.getPopularity()
+						.compareToIgnoreCase(
+								(list.get(minIndex)).getPopularity()) < 0) {
+					minIndex = j;
+				} else if (list
+						.get(j)
+						.getPopularity()
+						.compareToIgnoreCase(
+								(list.get(minIndex)).getPopularity()) == 0) {
 
+					if (list.get(j)
+							.getUser()
+							.compareToIgnoreCase((list.get(minIndex)).getUser()) < 0)
+						minIndex = j;
+				}
+			}
+			if (minIndex != k) {
+				TweetInfo tempTweet = list.get(k);
+				list.add(k, list.get(minIndex));
+				list.remove(k + 1);
+				list.add(minIndex, tempTweet);
+				list.remove(minIndex + 1);
+			}
 		}
+		
+		return list;
 	}
-
+	//**********************************************************************************************************
+	
+	
 	// Method to search table for specific keyword
+	//**********************************************************************************************************	
 	public void searchMap() {
 		Set<String> kSet = tweetMap.keySet();
 		System.out.println("Please enter a keyword to search for.");
@@ -110,41 +146,20 @@ public class TweetTable {
 				String aKey = tempIter.next();
 				if (aKey.equalsIgnoreCase(lInput)) {
 					ArrayList<TweetInfo> lValue = tweetMap.get(aKey);
-					
-						for (int k = 0; k < lValue.size() - 1; k++) {
-							int minIndex = k;
-							
-							for (int j = k + 1; j < lValue.size(); j++) {
-								if (lValue.get(j).getPopularity().compareToIgnoreCase(
-												lValue.get(minIndex).getPopularity()) < 0) {
-									minIndex = j;
-								} else if (lValue.get(j).getPopularity().compareToIgnoreCase(
-												lValue.get(minIndex).getPopularity()) == 0) {
-									
-									if (lValue.get(j).getUser().compareToIgnoreCase(
-													lValue.get(minIndex).getUser()) < 0)
-										minIndex = j;
 
-								}
-								
-							}
-							if (minIndex != k) {
-								TweetInfo tempTweet = lValue.get(k);
-								lValue.add(k, lValue.get(minIndex));
-								lValue.remove(k+1);
-								lValue.add(minIndex, tempTweet);
-								lValue.remove(minIndex+1);
-							
+					lValue = sortTweets(lValue); // call method to sort the tweets
 
-							}
-						}
-						Iterator<TweetInfo> mIter = lValue.iterator();
-						System.out.println("Keyword: " + aKey + " has values: ");
-						while (mIter.hasNext()) {
-							mIter.next();
-							System.out.println("Popularity: "+lValue.get(i).getPopularity()+" ID: "+lValue.get(i).getId()+ " User: "+ lValue.get(i).getUser() + " Tweet: "
+					Iterator<TweetInfo> mIter = lValue.iterator();
+					System.out.println("\nKeyword: " + aKey + " returns the following tweets.\n");
+					while (mIter.hasNext()) {
+						mIter.next();
+							
+						System.out.println("Popularity: "
+								+ lValue.get(i).getPopularity() + " ID: "
+								+ lValue.get(i).getId() + " User: "
+								+ lValue.get(i).getUser() + " Tweet: "
 								+ lValue.get(i).getTweet());
-							i++;
+						i++;
 					} // end of while loop
 					found = true;
 				} // end of if statement
@@ -161,7 +176,7 @@ public class TweetTable {
 					keepSearching = false;
 					input.close();
 				} else {
-					System.out.println("Please enter a keyword to search for.");
+					System.out.println("\nPlease enter a keyword to search for.");
 					lInput = input.nextLine();
 				}
 			} // end of if statement
@@ -170,7 +185,7 @@ public class TweetTable {
 			// continue searching for keywords
 			else {
 				System.out
-						.println("Would you like to search for another keyword? Yes or no?");
+						.println("\nWould you like to search for another keyword? Yes or no?");
 				if (input.nextLine().equalsIgnoreCase("no")) {
 					keepSearching = false;
 					input.close();
@@ -179,7 +194,7 @@ public class TweetTable {
 					// back to zero
 					found = false;
 					i = 0;
-					System.out.println("Please enter a keyword to search for.");
+					System.out.println("\nPlease enter a keyword to search for.");
 					lInput = input.nextLine();
 				}
 			}
@@ -190,5 +205,6 @@ public class TweetTable {
 
 		input.close();
 	} // end of searchMap method
-
-}
+	//**********************************************************************************************************
+	
+}// end of TweetTable class
