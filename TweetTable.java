@@ -7,6 +7,7 @@ import Project1.Passenger;
 public class TweetTable {
 
 	HashMap<String, ArrayList<TweetInfo>> tweetMap = new HashMap<String, ArrayList<TweetInfo>>();
+	public static final String FILE_PATH = "src\\Project4\\project4.csv";
 
 	// Import csv file and build List of keywords with sub list of tweets that
 	// contain that keyword
@@ -19,7 +20,7 @@ public class TweetTable {
 		String delimiter = ",";
 		FileIn fileInput = new FileIn();
 		fileInput
-				.openFile("C:\\Users\\SimmonsCS28\\workspace\\CompSci223\\src\\Project4\\project4.csv");
+				.openFile(FILE_PATH);
 		String line = fileInput.readLine();
 		String[] tempInputArray = line.split(delimiter);
 
@@ -57,7 +58,7 @@ public class TweetTable {
 		ArrayList<TweetInfo> subTweets = new ArrayList<TweetInfo>();
 		
 		FileIn fileIn = new FileIn();
-		fileIn.openFile("C:\\Users\\SimmonsCS28\\workspace\\CompSci223\\src\\Project4\\project4.csv");
+		fileIn.openFile(FILE_PATH);
 		String line = fileIn.readLine();
 
 		while (line != null) {
