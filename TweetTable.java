@@ -2,8 +2,6 @@ package Project4;
 
 import java.util.*;
 
-import Project1.Passenger;
-
 public class TweetTable {
 
 	HashMap<String, ArrayList<TweetInfo>> tweetMap = new HashMap<String, ArrayList<TweetInfo>>();
@@ -11,16 +9,15 @@ public class TweetTable {
 
 	// Import csv file and build List of keywords with sub list of tweets that
 	// contain that keyword
-	
-	//**********************************************************************************************************
+
+	// **********************************************************************************************************
 	public HashMap<String, ArrayList<TweetInfo>> createMap() {
 
 		String tempKeyword = " ", prevKeyword = null;
 
 		String delimiter = ",";
 		FileIn fileInput = new FileIn();
-		fileInput
-				.openFile(FILE_PATH);
+		fileInput.openFile(FILE_PATH);
 		String line = fileInput.readLine();
 		String[] tempInputArray = line.split(delimiter);
 
@@ -33,7 +30,10 @@ public class TweetTable {
 			// current keyword create a new list
 			if (prevKeyword == null || !prevKeyword.equals(tempKeyword)) {
 				ArrayList<TweetInfo> list = new ArrayList<TweetInfo>();
-				list = subListBuilder(tempKeyword); // call subListBuilder method to create list of tweets containing the keyword
+				list = subListBuilder(tempKeyword); // call subListBuilder
+													// method to create list of
+													// tweets containing the
+													// keyword
 				tweetMap.put(tempKeyword, list);
 				prevKeyword = tempInputArray[2];
 
@@ -48,15 +48,15 @@ public class TweetTable {
 
 		return tweetMap;
 	}
-	//**********************************************************************************************************	
-	
+
+	// **********************************************************************************************************
 
 	// Method to build sublist for each keyword's tweet
-	//**********************************************************************************************************
+	// **********************************************************************************************************
 	public ArrayList<TweetInfo> subListBuilder(String key) {
 
 		ArrayList<TweetInfo> subTweets = new ArrayList<TweetInfo>();
-		
+
 		FileIn fileIn = new FileIn();
 		fileIn.openFile(FILE_PATH);
 		String line = fileIn.readLine();
@@ -72,25 +72,25 @@ public class TweetTable {
 				String keyword = sr.next();
 				String user = sr.next();
 				String text = sr.next();
-				
+
 				while (sr.hasNext()) {
 					String next = sr.next();
-					text = text+","+next;
+					text = text + "," + next;
 				}
 				TweetInfo tweet = new TweetInfo(popularity, id, keyword, user,
 						text);
 				subTweets.add(tweet);
 			}
-			
+
 			line = fileIn.readLine();
 		}
 		return subTweets;
 	}
-	//**********************************************************************************************************
-	
-	
+
+	// **********************************************************************************************************
+
 	// Method to sort found tweets by popularity first then by user
-	//**********************************************************************************************************	
+	// **********************************************************************************************************
 	public ArrayList<TweetInfo> sortTweets(ArrayList<TweetInfo> list) {
 		for (int k = 0; k < list.size() - 1; k++) {
 			int minIndex = k;
@@ -121,14 +121,14 @@ public class TweetTable {
 				list.remove(minIndex + 1);
 			}
 		}
-		
+
 		return list;
 	}
-	//**********************************************************************************************************
-	
-	
+
+	// **********************************************************************************************************
+
 	// Method to search table for specific keyword
-	//**********************************************************************************************************	
+	// **********************************************************************************************************
 	public void searchMap() {
 		Set<String> kSet = tweetMap.keySet();
 		System.out.println("Please enter a keyword to search for.");
@@ -148,19 +148,22 @@ public class TweetTable {
 				if (aKey.equalsIgnoreCase(lInput)) {
 					ArrayList<TweetInfo> lValue = tweetMap.get(aKey);
 
-					lValue = sortTweets(lValue); // call method to sort the tweets
+					lValue = sortTweets(lValue); // call method to sort the
+													// tweets
 
 					Iterator<TweetInfo> mIter = lValue.iterator();
-					System.out.println("\nKeyword: " + aKey + " returns the following tweets.\n");
+					i = lValue.size() - 1;
+					System.out.println("\nThe keyword: " + aKey + " contains "
+							+ lValue.size() + " tweets.\n");
 					while (mIter.hasNext()) {
 						mIter.next();
-							
+
 						System.out.println("Popularity: "
 								+ lValue.get(i).getPopularity() + " ID: "
 								+ lValue.get(i).getId() + " User: "
 								+ lValue.get(i).getUser() + " Tweet: "
 								+ lValue.get(i).getTweet());
-						i++;
+						i--;
 					} // end of while loop
 					found = true;
 				} // end of if statement
@@ -173,12 +176,50 @@ public class TweetTable {
 				System.out
 						.println("Error. The keyword you've entered does not exist"
 								+ "\nWould you like to search for another keyword? Yes or no?");
-				if (input.nextLine().equalsIgnoreCase("no")) {
+				lInput = input.nextLine();
+				// if response is yes, ask for keyword and reset index starting
+				// point to zero
+				if (lInput.equalsIgnoreCase("yes")) {
+					System.out
+							.println("\nPlease enter a keyword to search for.");
+					lInput = input.nextLine();
+					i = 0;
+
+				}
+				// if the user accidentally inputs something other than yes or
+				// no, notify them and ask again
+				else if (!lInput.equalsIgnoreCase("yes")
+						&& !lInput.equalsIgnoreCase("no")) {
+					while (!lInput.equalsIgnoreCase("yes")
+							&& !lInput.equalsIgnoreCase("no")
+							|| !keepSearching == false) {
+						System.out
+								.println("Oops. You did not enter a valid response. Please try again");
+						System.out
+								.println("Would you like to search for another keyword? Yes or no?");
+						lInput = input.nextLine();
+						// if response is yes, reset keepSearching variable to
+						// true and reset index starting point to zero
+						if (lInput.equalsIgnoreCase("yes")) {
+							keepSearching = true;
+							i = 0;
+							System.out
+									.println("\nPlease enter a keyword to search for.");
+							lInput = input.nextLine();
+							break;
+						}
+						// else if the response is no, change keepSearching
+						// value to false to end search loop
+						else if (lInput.equalsIgnoreCase("no")) {
+							keepSearching = false;
+						}
+					}
+				}
+				// else if the response is no, change keepSearching value to
+				// false to end search loop
+				else {
 					keepSearching = false;
 					input.close();
-				} else {
-					System.out.println("\nPlease enter a keyword to search for.");
-					lInput = input.nextLine();
 				}
 			} // end of if statement
 
@@ -187,25 +228,60 @@ public class TweetTable {
 			else {
 				System.out
 						.println("\nWould you like to search for another keyword? Yes or no?");
-				if (input.nextLine().equalsIgnoreCase("no")) {
-					keepSearching = false;
-					input.close();
-				} else {
-					// Reset found variable too false and index starting point
-					// back to zero
+				lInput = input.nextLine();
+				// if response is yes, reset found variable to false and reset
+				// index starting point to zero
+				if (lInput.equalsIgnoreCase("yes")) {
 					found = false;
 					i = 0;
-					System.out.println("\nPlease enter a keyword to search for.");
+					System.out
+							.println("\nPlease enter a keyword to search for.");
 					lInput = input.nextLine();
+				}
+				// if the user accidentally inputs something other than yes or
+				// no, notify them and ask again
+				else if (!lInput.equalsIgnoreCase("yes")
+						&& !lInput.equalsIgnoreCase("no")) {
+					while (!lInput.equalsIgnoreCase("yes")
+							&& !lInput.equalsIgnoreCase("no")
+							|| !keepSearching == false) {
+						System.out
+								.println("Oops. You did not enter a valid response. Please try again");
+						System.out
+								.println("Would you like to search for another keyword? Yes or no?");
+						lInput = input.nextLine();
+						// if response is yes, reset found variable to false
+						// reset index starting point to zero
+						if (lInput.equalsIgnoreCase("yes")) {
+							keepSearching = true;
+							found = false;
+							i = 0;
+							System.out
+									.println("\nPlease enter a keyword to search for.");
+							lInput = input.nextLine();
+							break;
+						}
+						// else if the response is no, change keepSearching
+						// value to false to end search loop
+						else if (lInput.equalsIgnoreCase("no")) {
+							keepSearching = false;
+						}
+					}
+				}
+				// else if the response is no, change keepSearching value to
+				// false to end search loop
+				else {
+					keepSearching = false;
+					input.close();
 				}
 			}
 			// Create a new iterator to reset the original iterator
 			Iterator<String> searchIter = kSet.iterator();
 			tempIter = searchIter;
-		}// end of main while loop
+		}// end of main search while loop
 
 		input.close();
 	} // end of searchMap method
-	//**********************************************************************************************************
-	
+		// **********************************************************************************************************
+
 }// end of TweetTable class
