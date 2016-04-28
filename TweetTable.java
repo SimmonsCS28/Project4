@@ -107,9 +107,9 @@ public class TweetTable {
 						.compareToIgnoreCase(
 								(list.get(minIndex)).getPopularity()) == 0) {
 
-					if (list.get(j)
+					if (list.get(minIndex)
 							.getUser()
-							.compareToIgnoreCase((list.get(minIndex)).getUser()) < 0)
+							.compareToIgnoreCase((list.get(j)).getUser()) < 0)
 						minIndex = j;
 				}
 			}
